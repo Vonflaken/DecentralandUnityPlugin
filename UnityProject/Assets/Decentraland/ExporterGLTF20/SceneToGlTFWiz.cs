@@ -15,7 +15,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Reflection;
-using Ionic.Zip;
+using ZipFile = Ionic.Zip.ZipFile;
 
 public enum IMAGETYPE
 {
