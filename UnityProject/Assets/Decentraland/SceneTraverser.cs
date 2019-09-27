@@ -544,12 +544,14 @@ engine.addSystem(new AutoPlayUnityAudio())
             }
             else
             {
+                shapeName = "GLTFShape";
+
                 //gltf - root
                 dclObject.dclNodeType = EDclNodeType.gltf;
 
                 if (exportStr != null)
                 {
-                    string gltfPath = string.Format("./unity_assets/{0}.gltf", GetIdentityName(tra.gameObject));
+                    string gltfPath = string.Format("unity_assets/{0}.gltf", GetIdentityName(tra.gameObject));
                     exportStr.AppendFormat(SetGLTFshape, entityName, gltfPath);
                 }
 
