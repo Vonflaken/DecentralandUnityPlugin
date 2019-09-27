@@ -675,19 +675,25 @@ engine.addSystem(new AutoPlayUnityAudio())
                     _resourceRecorder.audioClipsToExport.Add(audioClip);
                 }
 
-                var playFunctionName = "playAudioSource" + Mathf.Abs(audioSource.GetInstanceID());
+                var playFunctionName = "setAudioSource" + Mathf.Abs(audioSource.GetInstanceID());
                 exportStr.AppendFormat(
-                    @"var audioSource = new AudioSource(new AudioClip({0}))
-var {1} = () => {{
-{2}{3}.addComponent(audioSource)"
+                    @"let {1} = () => {{
+{2}if ({3}.hasComponent(AudioSource) == false)
+{2}{{
+{2}{2}let audioSource = new AudioSource(new AudioClip({0}))
+{2}{2}if (audioSource != null)
+{2}{2}{{
+{2}{2}{2}{3}.addComponent(audioSource)"
                     , audioClipRelPath, playFunctionName, indentUnit, entityName);
                 exportStr.AppendLine();
-                exportStr.AppendIndent(indentUnit, 1).AppendFormat("audioSource.playing = {0}\n",
+                exportStr.AppendIndent(indentUnit, 3).AppendFormat("audioSource.playing = {0}\n",
                     BoolToString(audioSource.playOnAwake));
-                exportStr.AppendIndent(indentUnit, 1)
+                exportStr.AppendIndent(indentUnit, 3)
                     .AppendFormat("audioSource.loop = {0}\n", BoolToString(audioSource.loop));
-                exportStr.AppendIndent(indentUnit, 1).AppendFormat("audioSource.volume = {0}\n", audioSource.volume);
-                exportStr.AppendIndent(indentUnit, 1).AppendFormat("audioSource.pitch = {0}\n", audioSource.pitch);
+                exportStr.AppendIndent(indentUnit, 3).AppendFormat("audioSource.volume = {0}\n", audioSource.volume);
+                exportStr.AppendIndent(indentUnit, 3).AppendFormat("audioSource.pitch = {0}\n", audioSource.pitch);
+                exportStr.AppendIndent(indentUnit, 2).Append("}\n");
+                exportStr.AppendIndent(indentUnit, 1).Append("}\n");
                 exportStr.Append("}\n");
 
                 _resourceRecorder.audioSourceAddFunctions.Add(playFunctionName);
