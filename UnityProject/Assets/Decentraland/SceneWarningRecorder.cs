@@ -9,11 +9,11 @@ namespace Dcl
         //超出parcels
         public class OutOfLand
         {
-            public MeshRenderer meshRenderer;
+            public Renderer renderer;
 
-            public OutOfLand(MeshRenderer meshRenderer)
+            public OutOfLand(Renderer renderer)
             {
-                this.meshRenderer = meshRenderer;
+                this.renderer = renderer;
             }
         }
         //Shader不支持

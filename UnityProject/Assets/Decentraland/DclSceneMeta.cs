@@ -81,9 +81,9 @@ namespace Dcl
             {
                 var oriColor = Gizmos.color;
                 Gizmos.color = Color.red;
-                if (outOfLandWarning.meshRenderer)
+                if (outOfLandWarning.renderer)
                 {
-                    Gizmos.DrawWireCube(outOfLandWarning.meshRenderer.bounds.center, outOfLandWarning.meshRenderer.bounds.size);
+                    Gizmos.DrawWireCube(outOfLandWarning.renderer.bounds.center, outOfLandWarning.renderer.bounds.size);
                 }
                 Gizmos.color = oriColor;
             }

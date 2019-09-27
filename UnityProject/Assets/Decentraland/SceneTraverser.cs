@@ -173,21 +173,36 @@ engine.addSystem(new AutoPlayUnityAudio())
                 ProcessMaterial(tra, false, entityName, resourceRecorder.primitiveMaterialsToExport, exportStr,
                     statistics);
 
-                if (tra.GetComponent<MeshRenderer>())
+                if (tra.GetComponent<MeshRenderer>() || tra.GetComponent<SkinnedMeshRenderer>())
                 {
                     var meshFilter = tra.GetComponent<MeshFilter>();
-                    var meshRenderer = tra.GetComponent<MeshRenderer>();
+                    Renderer meshRenderer = tra.GetComponent<MeshRenderer>();
+
+                    SkinnedMeshRenderer smr = null;
+                    Mesh mesh = null;
+                    if (!meshRenderer)
+                    {
+                        smr = tra.GetComponent<SkinnedMeshRenderer>();
+                        if (smr)
+                        {
+                            mesh = smr.sharedMesh;
+                        }
+                    }
+                    else if (meshFilter)
+                    {
+                        mesh = meshFilter.sharedMesh;
+                    }
 
                     //Statistics
                     if (statistics != null)
                     {
-                        if (meshFilter && meshFilter.sharedMesh)
+                        if (mesh)
                         {
-                            statistics.triangleCount += meshFilter.sharedMesh.triangles.LongLength / 3;
+                            statistics.triangleCount += mesh.triangles.LongLength / 3;
                             statistics.bodyCount += 1;
                         }
 
-                        var curHeight = meshRenderer.bounds.max.y;
+                        var curHeight = meshRenderer ? meshRenderer.bounds.max.y : smr.bounds.max.y;
                         if (curHeight > statistics.maxHeight) statistics.maxHeight = curHeight;
                     }
 
@@ -198,8 +213,8 @@ engine.addSystem(new AutoPlayUnityAudio())
                         if (_sceneMeta)
                         {
                             var isOutOfLand = false;
-                            var startParcel = SceneUtil.GetParcelCoordinates(meshRenderer.bounds.min);
-                            var endParcel = SceneUtil.GetParcelCoordinates(meshRenderer.bounds.max);
+                            var startParcel = SceneUtil.GetParcelCoordinates(meshRenderer ? meshRenderer.bounds.min : smr.bounds.min);
+                            var endParcel = SceneUtil.GetParcelCoordinates(meshRenderer ? meshRenderer.bounds.max : smr.bounds.max);
                             for (int x = startParcel.x; x <= endParcel.x; x++)
                             {
                                 for (int y = startParcel.y; y <= endParcel.y; y++)
@@ -207,7 +222,7 @@ engine.addSystem(new AutoPlayUnityAudio())
                                     if (!_sceneMeta.parcels.Exists(parcel => parcel == new ParcelCoordinates(x, y)))
                                     {
                                         warningRecorder.OutOfLandWarnings.Add(
-                                            new SceneWarningRecorder.OutOfLand(meshRenderer));
+                                            new SceneWarningRecorder.OutOfLand(meshRenderer ? meshRenderer : smr));
                                         isOutOfLand = true;
                                         break;
                                     }
@@ -276,21 +291,36 @@ engine.addSystem(new AutoPlayUnityAudio())
 
             if (layerUnderGLTFRoot > 0) dclObject.dclNodeType = EDclNodeType.ChildOfGLTF;
 
-            if (tra.GetComponent<MeshRenderer>())
+            if (tra.GetComponent<MeshRenderer>() || tra.GetComponent<SkinnedMeshRenderer>())
             {
                 var meshFilter = tra.GetComponent<MeshFilter>();
-                var meshRenderer = tra.GetComponent<MeshRenderer>();
+                Renderer meshRenderer = tra.GetComponent<MeshRenderer>();
+
+                SkinnedMeshRenderer smr = null;
+                Mesh mesh = null;
+                if (!meshRenderer)
+                {
+                    smr = tra.GetComponent<SkinnedMeshRenderer>();
+                    if (smr)
+                    {
+                        mesh = smr.sharedMesh;
+                    }
+                }
+                else if (meshFilter)
+                {
+                    mesh = meshFilter.sharedMesh;
+                }
 
                 //Statistics
                 if (statistics != null)
                 {
-                    if (meshFilter && meshFilter.sharedMesh)
+                    if (mesh)
                     {
-                        statistics.triangleCount += meshFilter.sharedMesh.triangles.LongLength / 3;
+                        statistics.triangleCount += mesh.triangles.LongLength / 3;
                         statistics.bodyCount += 1;
                     }
 
-                    var curHeight = meshRenderer.bounds.max.y;
+                    var curHeight = meshRenderer ? meshRenderer.bounds.max.y : smr.bounds.max.y;
                     if (curHeight > statistics.maxHeight) statistics.maxHeight = curHeight;
                 }
 
@@ -301,8 +331,8 @@ engine.addSystem(new AutoPlayUnityAudio())
                     if (_sceneMeta)
                     {
                         var isOutOfLand = false;
-                        var startParcel = SceneUtil.GetParcelCoordinates(meshRenderer.bounds.min);
-                        var endParcel = SceneUtil.GetParcelCoordinates(meshRenderer.bounds.max);
+                        var startParcel = SceneUtil.GetParcelCoordinates(meshRenderer ? meshRenderer.bounds.min : smr.bounds.min);
+                        var endParcel = SceneUtil.GetParcelCoordinates(meshRenderer ? meshRenderer.bounds.max : smr.bounds.max);
                         for (int x = startParcel.x; x <= endParcel.x; x++)
                         {
                             for (int y = startParcel.y; y <= endParcel.y; y++)
@@ -310,7 +340,7 @@ engine.addSystem(new AutoPlayUnityAudio())
                                 if (!_sceneMeta.parcels.Exists(parcel => parcel == new ParcelCoordinates(x, y)))
                                 {
                                     warningRecorder.OutOfLandWarnings.Add(
-                                        new SceneWarningRecorder.OutOfLand(meshRenderer));
+                                        new SceneWarningRecorder.OutOfLand(meshRenderer ? meshRenderer : smr));
                                     isOutOfLand = true;
                                     break;
                                 }
@@ -363,17 +393,18 @@ engine.addSystem(new AutoPlayUnityAudio())
             List<Material> materialsToExport, StringBuilder exportStr, SceneStatistics statistics)
         {
             var rdrr = tra.GetComponent<MeshRenderer>();
-            if (rdrr && tra.GetComponent<MeshFilter>())
+            var smr = tra.GetComponent<SkinnedMeshRenderer>();
+            if ((rdrr && tra.GetComponent<MeshFilter>()) || (smr && smr.sharedMesh))
             {
                 List<Material> materialList;
                 if (isOnOrUnderGLTF)
                 {
-                    materialList = rdrr.sharedMaterials.ToList();
+                    materialList = rdrr ? rdrr.sharedMaterials.ToList() : smr.sharedMaterials.ToList();
                 }
                 else
                 {
                     materialList = new List<Material>();
-                    if (rdrr.sharedMaterial) materialList.Add(rdrr.sharedMaterial);
+                    if ((rdrr && rdrr.sharedMaterial) || (smr && smr.sharedMaterial)) materialList.Add(rdrr ? rdrr.sharedMaterial : smr.sharedMaterial);
                 }
 
                 foreach (var material in materialList)
@@ -499,7 +530,7 @@ engine.addSystem(new AutoPlayUnityAudio())
             ResourceRecorder resourceRecorder, SceneStatistics statistics)
         {
             var meshFilter = tra.GetComponent<MeshFilter>();
-            if (!(meshFilter && tra.GetComponent<MeshRenderer>()))
+            if (!(meshFilter && tra.GetComponent<MeshRenderer>() || tra.GetComponent<SkinnedMeshRenderer>()))
             {
                 return;
             }
@@ -665,7 +696,7 @@ engine.addSystem(new AutoPlayUnityAudio())
         public static void ProcessAudio(Transform tra, string entityName, StringBuilder exportStr)
         {
             var audioSource = tra.GetComponent<AudioSource>();
-            if (audioSource && exportStr != null)
+            if (audioSource && audioSource.clip != null && exportStr != null)
             {
                 var audioClip = audioSource.clip;
                 string audioClipRelPath = null;

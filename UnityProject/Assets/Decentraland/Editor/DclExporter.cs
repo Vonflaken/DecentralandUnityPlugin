@@ -287,8 +287,8 @@ namespace Dcl
 
                     foreach (var outOfLandWarning in sceneMeta.sceneWarningRecorder.OutOfLandWarnings)
                     {
-						WarningLineGUI(string.Format(LabelLocalization.getString(LanguageStringValue.OutofLandRange), outOfLandWarning.meshRenderer.name),
-                            null, outOfLandWarning.meshRenderer.gameObject);
+						WarningLineGUI(string.Format(LabelLocalization.getString(LanguageStringValue.OutofLandRange), outOfLandWarning.renderer.name),
+                            null, outOfLandWarning.renderer.gameObject);
                     }
 
                     foreach (var warning in sceneMeta.sceneWarningRecorder.UnsupportedShaderWarnings)
@@ -669,7 +669,7 @@ namespace Dcl
                 UnityEditor.FileUtil.DeleteFileOrDirectory(unityAssetsFolderPath);
             }
 
-            Directory.CreateDirectory(unityAssetsFolderPath);//TODO:当DCLSDK运行时，文件操作会冲突。可能可以用异步等待删除完毕。
+            Directory.CreateDirectory(unityAssetsFolderPath);//TODO:用异步等待删除完毕
 
 
             if (!Directory.Exists(Path.Combine(exportPath, "src"))){
@@ -687,7 +687,7 @@ namespace Dcl
             foreach (var go in resourceRecorder.meshesToExport)
             {
 				string tempPath = Path.Combine (unityAssetsFolderPath, SceneTraverser.GetIdentityName(go) + ".gltf");
-				sceneMeta.sceneToGlTFWiz.ExportGameObjectAndChildren(go, tempPath, null, false, true, false, false);
+				sceneMeta.sceneToGlTFWiz.ExportGameObjectAndChildren(go, tempPath, null, false, true, true, false);
             }
 
             //textures
