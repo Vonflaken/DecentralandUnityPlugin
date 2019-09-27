@@ -571,7 +571,7 @@ engine.addSystem(new AutoPlayUnityAudio())
 
                 if (dclObject && !dclObject.visible)
                 {
-                    exportStr.AppendFormat("{0}.getComponent(Shape).visible = false\n", entityName);
+                    exportStr.AppendFormat("{0}.getComponent({1}).visible = false\n", entityName, shapeName);
                 }
             }
         }
