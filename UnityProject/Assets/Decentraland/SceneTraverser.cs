@@ -101,6 +101,9 @@ engine.addSystem(new AutoPlayUnityAudio())
                 }
             }
 
+            // Append this at the end of script so other scripts can import it and set some execution order
+            exportStr.AppendLine("export default {}");
+
             if (statistics != null)
             {
                 statistics.textureCount = _resourceRecorder.primitiveTexturesToExport.Count +
