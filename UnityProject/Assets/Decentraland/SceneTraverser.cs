@@ -74,6 +74,11 @@ namespace Dcl
             //GameObjectToNodeTypeDict.Clear();
 
             //====== Start Traversing ======
+            if (exportStr != null)
+            {
+                exportStr.AppendLine("@Component('TagComponent')\nclass TagComponent{\n    tag: string\n}");
+            }
+
             foreach (var rootGO in rootGameObjects)
             {
                 RecursivelyTraverseTransform(rootGO.transform, exportStr, _resourceRecorder, 4, statistics,
@@ -139,6 +144,11 @@ engine.addSystem(new AutoPlayUnityAudio())
             if (exportStr != null)
             {
                 exportStr.AppendFormat(NewEntityWithName, entityName, tra.name);
+
+                if (tra.gameObject.tag != "Untagged")
+                {
+                    exportStr.AppendFormat(SetTag, entityName, tra.gameObject.tag);
+                }
 
                 if (tra.parent)
                 {
@@ -369,6 +379,8 @@ engine.addSystem(new AutoPlayUnityAudio())
         private const string NewEntity = "var {0} = new Entity()\n";
         private const string NewEntityWithName = "var {0} = new Entity(\"{1}\")\n";
         private const string AddEntity = "engine.addEntity({0})\n";
+
+        private const string SetTag = "{0}.addComponent(new TagComponent())\n{0}.getComponent(TagComponent).tag = \"{1}\" \n";
 
         private const string SetTransform =
             "{0}.addComponent(new Transform({{ position: new Vector3({1}, {2}, {3}) }}))\n";
@@ -834,7 +846,7 @@ engine.addSystem(new AutoPlayUnityAudio())
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="texture"></param>
         /// <returns>false if </returns>
@@ -860,7 +872,7 @@ engine.addSystem(new AutoPlayUnityAudio())
         }
 
         /*
-         * 
+         *
         public static string CalcName(Object _object)
         {
             string name = "";
