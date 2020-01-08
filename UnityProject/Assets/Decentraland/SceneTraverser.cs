@@ -104,10 +104,12 @@ namespace Dcl
 engine.addSystem(new AutoPlayUnityAudio())
 ");
                 }
+
+                // Append this at the end of script so other scripts can import it and set some execution order
+                //exportStr.AppendLine("export default {}");
+
             }
 
-            // Append this at the end of script so other scripts can import it and set some execution order
-            exportStr.AppendLine("export default {}");
 
             if (statistics != null)
             {
@@ -831,7 +833,7 @@ engine.addSystem(new AutoPlayUnityAudio())
         /// </summary>
         private static string ToHexString(Color color)
         {
-            var color256 = (Color32) color;
+            var color256 = (Color32)color;
             return String.Format("#{0:X2}{1:X2}{2:X2}", color256.r, color256.g, color256.b);
         }
 
