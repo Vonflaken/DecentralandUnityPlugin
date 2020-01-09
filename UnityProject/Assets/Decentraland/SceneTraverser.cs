@@ -76,7 +76,9 @@ namespace Dcl
             //====== Start Traversing ======
             if (exportStr != null)
             {
-                exportStr.AppendLine("@Component('TagComponent')\nclass TagComponent{\n    tag: string\n}");
+                exportStr.AppendLine("@Component('TagComponent')\nclass TagComponent{\n    tag: string\n}\n" +
+                    "@Component('Path')\nclass Path{\n    pathPoints: any[]\n    constructor(pathPoints: any[]){\n        this.pathPoints = pathPoints\n    }\n}"
+                    );
             }
 
             foreach (var rootGO in rootGameObjects)
@@ -145,6 +147,25 @@ engine.addSystem(new AutoPlayUnityAudio())
 
             if (exportStr != null)
             {
+
+                path pathObject = (tra.gameObject.GetComponent("path") as path);
+                if (pathObject)
+                {
+                    Component[] points = pathObject.GetComponentsInChildren(typeof(path_point));
+                    exportStr.AppendFormat(SetPath, entityName, tra.name);
+                    for (int i = 0; i < points.Length; i++)
+                    {
+                        path_point point = (points[i] as path_point);
+                        exportStr.AppendFormat(SetPathPoint, entityName, point.transform.position.x, point.transform.position.y, point.transform.position.z, point.speed, point.wait);
+
+                    }
+                    return;
+                }
+                else if ((tra.gameObject.GetComponent("path_point") as path_point))
+                {
+                    return;
+                }
+
                 exportStr.AppendFormat(NewEntityWithName, entityName, tra.name);
 
                 if (tra.gameObject.tag != "Untagged")
@@ -405,6 +426,9 @@ engine.addSystem(new AutoPlayUnityAudio())
         private const string SetMaterialRefractionTexture = "{0}.refractionTexture = new Texture(\"{1}\")\n";
         private const string SetMaterialEmissiveIntensity = "{0}.emissiveIntensity = {1}\n";
         private const string SetMaterialEmissiveTexture = "{0}.emissiveTexture = new Texture(\"{1}\")\n";
+
+        private const string SetPath = "var {0} = new Entity(\"{1}\")\n{0}.addComponent(new Path([]))\n";
+        private const string SetPathPoint = "{0}.getComponent(Path).pathPoints.push({{position: new Vector3({1}, {2}, {3}), speed: {4}, wait: {5}}}) \n";
 
         public static void ProcessMaterial(Transform tra, bool isOnOrUnderGLTF, string entityName,
             List<Material> materialsToExport, StringBuilder exportStr, SceneStatistics statistics)
