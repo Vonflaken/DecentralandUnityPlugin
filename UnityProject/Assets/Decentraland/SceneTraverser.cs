@@ -159,6 +159,7 @@ engine.addSystem(new AutoPlayUnityAudio())
                         exportStr.AppendFormat(SetPathPoint, entityName, point.transform.position.x, point.transform.position.y, point.transform.position.z, point.speed, point.wait);
 
                     }
+                    exportStr.AppendFormat(AddEntity, entityName);
                     return;
                 }
                 else if ((tra.gameObject.GetComponent("path_point") as path_point))
