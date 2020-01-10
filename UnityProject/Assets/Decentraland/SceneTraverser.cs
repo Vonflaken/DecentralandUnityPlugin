@@ -76,8 +76,28 @@ namespace Dcl
             //====== Start Traversing ======
             if (exportStr != null)
             {
-                exportStr.AppendLine("@Component('TagComponent')\nclass TagComponent{\n    tag: string\n}\n" +
-                    "@Component('Path')\nclass Path{\n    pathPoints: any[]\n    constructor(pathPoints: any[]){\n        this.pathPoints = pathPoints\n    }\n}"
+                exportStr.AppendLine("" +
+                    "@Component('TagComponent')\n" +
+                    "class TagComponent{\n" +
+                    "    tag: string\n}\n" +
+                    "@Component('Path')\n" +
+                    "class Path{\n" +
+                    "    id: any\n" +
+                    "    pathPoints: any[]\n" +
+                    "    onFinish: number\n" +
+                    "    constructor(id: any, pathPoints: any[], onFinish: number){\n" +
+                    "        this.id = id\n" +
+                    "        this.pathPoints = pathPoints\n" +
+                    "        this.onFinish = onFinish\n" +
+                    "    }\n" +
+                    "}\n" +
+                    "@Component('PathFollower')\n" +
+                    "class PathFollower{\n" +
+                    "    pathToFollow: string\n" +
+                    "    constructor(pathToFollow: string){\n" +
+                    "        this.pathToFollow = pathToFollow\n" +
+                    "    }\n" +
+                    "}"
                     );
             }
 
@@ -152,7 +172,7 @@ engine.addSystem(new AutoPlayUnityAudio())
                 if (pathObject)
                 {
                     Component[] points = pathObject.GetComponentsInChildren(typeof(path_point));
-                    exportStr.AppendFormat(SetPath, entityName, tra.name);
+                    exportStr.AppendFormat(SetPath, entityName, tra.name, (int)pathObject.onFinish);
                     for (int i = 0; i < points.Length; i++)
                     {
                         path_point point = (points[i] as path_point);
@@ -168,6 +188,13 @@ engine.addSystem(new AutoPlayUnityAudio())
                 }
 
                 exportStr.AppendFormat(NewEntityWithName, entityName, tra.name);
+
+
+                path_follower pathFollower = (tra.gameObject.GetComponent("path_follower") as path_follower);
+                if (pathFollower)
+                {
+                    exportStr.AppendFormat(SetPathFollower, entityName, pathFollower.pathToFollow.name);
+                }
 
                 if (tra.gameObject.tag != "Untagged")
                 {
@@ -428,8 +455,10 @@ engine.addSystem(new AutoPlayUnityAudio())
         private const string SetMaterialEmissiveIntensity = "{0}.emissiveIntensity = {1}\n";
         private const string SetMaterialEmissiveTexture = "{0}.emissiveTexture = new Texture(\"{1}\")\n";
 
-        private const string SetPath = "var {0} = new Entity(\"{1}\")\n{0}.addComponent(new Path([]))\n";
+        private const string SetPath = "var {0} = new Entity(\"{1}\")\n{0}.addComponent(new Path(\"{1}\", [], {2}))\n";
         private const string SetPathPoint = "{0}.getComponent(Path).pathPoints.push({{position: new Vector3({1}, {2}, {3}), speed: {4}, wait: {5}}}) \n";
+
+        private const string SetPathFollower = "{0}.addComponent(new PathFollower(\"{1}\")) \n";
 
         public static void ProcessMaterial(Transform tra, bool isOnOrUnderGLTF, string entityName,
             List<Material> materialsToExport, StringBuilder exportStr, SceneStatistics statistics)
