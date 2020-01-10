@@ -77,7 +77,8 @@ namespace Dcl
             if (exportStr != null)
             {
                 exportStr.AppendLine("" +
-                    "@Component('TagComponent')\n" +
+                    "import { TagComponent, Path, PathFollower, DoorComponent } from \"./imports/index\"\n\n"
+                    /*"@Component('TagComponent')\n" +
                     "class TagComponent{\n" +
                     "    tag: string\n}\n" +
                     "@Component('Path')\n" +
@@ -97,7 +98,20 @@ namespace Dcl
                     "    constructor(pathToFollow: string){\n" +
                     "        this.pathToFollow = pathToFollow\n" +
                     "    }\n" +
-                    "}"
+                    "}\n"+
+                    "@Component('Door')\n" +
+                    "class Door{\n" +
+                    "    closeSpeed: number\n" +
+                    "    waitToClose: number\n" +
+                    "    startClosed: Boolean\n" +
+                    "    closeMoveVector: Vector3\n" +
+                    "    constructor(closeSpeed: number, waitToClose: number, startClosed: Boolean, closeMoveVector: Vector3){\n" +
+                    "        this.closeSpeed = closeSpeed\n" +
+                    "        this.waitToClose = waitToClose\n" +
+                    "        this.startClosed = startClosed\n" +
+                    "        this.closeMoveVector = closeMoveVector\n" +
+                    "    }\n" +
+                    "}\n"*/
                     );
             }
 
@@ -189,7 +203,6 @@ engine.addSystem(new AutoPlayUnityAudio())
 
                 exportStr.AppendFormat(NewEntityWithName, entityName, tra.name);
 
-
                 path_follower pathFollower = (tra.gameObject.GetComponent("path_follower") as path_follower);
                 if (pathFollower)
                 {
@@ -216,6 +229,17 @@ engine.addSystem(new AutoPlayUnityAudio())
                 exportStr.AppendFormat(SetTransform, entityName, position.x, position.y, position.z);
                 exportStr.AppendFormat(SetRotation, entityName, rotation.x, rotation.y, rotation.z, rotation.w);
                 exportStr.AppendFormat(SetScale, entityName, scale.x, scale.y, scale.z);
+
+                door doorObject = (tra.gameObject.GetComponent("door") as door);
+                if (doorObject)
+                {
+                    string startClosed = "false";
+                    if (doorObject.startClosed)
+                    {
+                        startClosed = "true";
+                    }
+                    exportStr.AppendFormat(SetDoor, entityName, doorObject.closeSpeed, doorObject.waitToClose, startClosed, doorObject.closeMoveVector.x, doorObject.closeMoveVector.y, doorObject.closeMoveVector.z);
+                }
 
             }
 
@@ -459,6 +483,7 @@ engine.addSystem(new AutoPlayUnityAudio())
         private const string SetPathPoint = "{0}.getComponent(Path).pathPoints.push({{position: new Vector3({1}, {2}, {3}), speed: {4}, wait: {5}}}) \n";
 
         private const string SetPathFollower = "{0}.addComponent(new PathFollower(\"{1}\")) \n";
+        private const string SetDoor = "{0}.addComponent(new DoorComponent({0}, {1}, {2}, {3}, new Vector3({4}, {5}, {6}))) \n";
 
         public static void ProcessMaterial(Transform tra, bool isOnOrUnderGLTF, string entityName,
             List<Material> materialsToExport, StringBuilder exportStr, SceneStatistics statistics)
