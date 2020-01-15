@@ -77,7 +77,7 @@ namespace Dcl
             if (exportStr != null)
             {
                 exportStr.AppendLine("" +
-                    "import { TagComponent, Path, PathFollower, DoorComponent } from \"./imports/index\"\n\n"
+                    "import { TagComponent, Path, PathFollower, DoorComponent, TrapDoorTrigger, trapDoorTriggersInfo } from \"./imports/index\"\n\n"
                     /*"@Component('TagComponent')\n" +
                     "class TagComponent{\n" +
                     "    tag: string\n}\n" +
@@ -182,31 +182,36 @@ engine.addSystem(new AutoPlayUnityAudio())
             if (exportStr != null)
             {
 
-                path pathObject = (tra.gameObject.GetComponent("path") as path);
+                Path_script pathObject = (tra.gameObject.GetComponent("Path_script") as Path_script);
                 if (pathObject)
                 {
-                    Component[] points = pathObject.GetComponentsInChildren(typeof(path_point));
-                    exportStr.AppendFormat(SetPath, entityName, tra.name, (int)pathObject.onFinish);
+                    Component[] points = pathObject.GetComponentsInChildren(typeof(Path_point_script));
+                    exportStr.AppendFormat(SetPath, entityName, tra.name, pathObject.globalPathSpeed, (int)pathObject.onFinish);
                     for (int i = 0; i < points.Length; i++)
                     {
-                        path_point point = (points[i] as path_point);
+                        Path_point_script point = (points[i] as Path_point_script);
                         exportStr.AppendFormat(SetPathPoint, entityName, point.transform.position.x, point.transform.position.y, point.transform.position.z, point.speed, point.wait);
 
                     }
                     exportStr.AppendFormat(AddEntity, entityName);
                     return;
                 }
-                else if ((tra.gameObject.GetComponent("path_point") as path_point))
+                else if ((tra.gameObject.GetComponent("Path_point_script") as Path_point_script))
                 {
                     return;
                 }
 
                 exportStr.AppendFormat(NewEntityWithName, entityName, tra.name);
 
-                path_follower pathFollower = (tra.gameObject.GetComponent("path_follower") as path_follower);
+                Path_follower_script pathFollower = (tra.gameObject.GetComponent("Path_follower_script") as Path_follower_script);
                 if (pathFollower)
                 {
-                    exportStr.AppendFormat(SetPathFollower, entityName, pathFollower.pathToFollow.name);
+                    string autoActivate = "false";
+                    if (pathFollower.autoActivate)
+                    {
+                        autoActivate = "true";
+                    }
+                    exportStr.AppendFormat(SetPathFollower, entityName, pathFollower.pathToFollow.name, autoActivate);
                 }
 
                 if (tra.gameObject.tag != "Untagged")
@@ -225,12 +230,32 @@ engine.addSystem(new AutoPlayUnityAudio())
                     exportStr.AppendFormat(AddEntity, entityName);
                 }
 
+                DoorTrigger_script triggerObject = (tra.gameObject.GetComponent("DoorTrigger_script") as DoorTrigger_script);
+                if (triggerObject)
+                {
+
+                    string doorNames = "[";
+
+                    for (int i = 0; i < triggerObject.doorsToClose.Length; i++)
+                    {
+                        doorNames += "\"" + triggerObject.doorsToClose[i].name + "\"";
+                        if (i + 1 < triggerObject.doorsToClose.Length)
+                        {
+                            doorNames += ",";
+                        }
+
+                    }
+                    doorNames += "]";
+                    exportStr.AppendFormat(SetTrigger, position.x, position.y, position.z, scale.x, scale.y, scale.z, (int)triggerObject.doorBehavior, doorNames);
+                    return;
+                }
+
                 //Transform
                 exportStr.AppendFormat(SetTransform, entityName, position.x, position.y, position.z);
                 exportStr.AppendFormat(SetRotation, entityName, rotation.x, rotation.y, rotation.z, rotation.w);
                 exportStr.AppendFormat(SetScale, entityName, scale.x, scale.y, scale.z);
 
-                door doorObject = (tra.gameObject.GetComponent("door") as door);
+                Door_script doorObject = (tra.gameObject.GetComponent("Door_script") as Door_script);
                 if (doorObject)
                 {
                     string startClosed = "false";
@@ -479,11 +504,13 @@ engine.addSystem(new AutoPlayUnityAudio())
         private const string SetMaterialEmissiveIntensity = "{0}.emissiveIntensity = {1}\n";
         private const string SetMaterialEmissiveTexture = "{0}.emissiveTexture = new Texture(\"{1}\")\n";
 
-        private const string SetPath = "var {0} = new Entity(\"{1}\")\n{0}.addComponent(new Path(\"{1}\", [], {2}))\n";
+        private const string SetPath = "var {0} = new Entity(\"{1}\")\n{0}.addComponent(new Path(\"{1}\", [], {2}, {3}))\n";
         private const string SetPathPoint = "{0}.getComponent(Path).pathPoints.push({{position: new Vector3({1}, {2}, {3}), speed: {4}, wait: {5}}}) \n";
 
-        private const string SetPathFollower = "{0}.addComponent(new PathFollower(\"{1}\")) \n";
+        private const string SetPathFollower = "{0}.addComponent(new PathFollower(\"{1}\", {2})) \n";
         private const string SetDoor = "{0}.addComponent(new DoorComponent({0}, {1}, {2}, {3}, new Vector3({4}, {5}, {6}))) \n";
+
+        private const string SetTrigger = "trapDoorTriggersInfo.push(new TrapDoorTrigger(new Vector3({0}, {1}, {2}), new Vector3({3}, {4}, {5}), {6}, {7}))\n";
 
         public static void ProcessMaterial(Transform tra, bool isOnOrUnderGLTF, string entityName,
             List<Material> materialsToExport, StringBuilder exportStr, SceneStatistics statistics)
