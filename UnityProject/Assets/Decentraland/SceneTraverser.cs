@@ -76,7 +76,7 @@ namespace Dcl
             //====== Start Traversing ======
             if (exportStr != null)
             {
-                exportStr.AppendLine("" +
+                exportStr.AppendLine(""+
                     "import { TagComponent, Path, PathFollower, DoorComponent, TrapDoorTrigger, trapDoorTriggersInfo } from \"./imports/index\"\n\n"
                     /*"@Component('TagComponent')\n" +
                     "class TagComponent{\n" +
@@ -203,6 +203,27 @@ engine.addSystem(new AutoPlayUnityAudio())
 
                 exportStr.AppendFormat(NewEntityWithName, entityName, tra.name);
 
+                DoorTrigger_script triggerObject = (tra.gameObject.GetComponent("DoorTrigger_script") as DoorTrigger_script);
+                if (triggerObject)
+                {
+
+                    string doorNames = "[";
+
+                    for (int i = 0; i < triggerObject.doorsToClose.Length; i++)
+                    {
+                        doorNames += "\"" + triggerObject.doorsToClose[i].name + "\"";
+                        if (i + 1 < triggerObject.doorsToClose.Length)
+                        {
+                            doorNames += ",";
+                        }
+
+                    }
+                    doorNames += "]";
+                    exportStr.AppendFormat(SetTrigger, tra.position.x, tra.position.y, tra.position.z, scale.x, scale.y, scale.z, (int)triggerObject.doorBehavior, doorNames);
+                    exportStr.AppendFormat(AddEntity, entityName);
+                    return;
+                }
+
                 Path_follower_script pathFollower = (tra.gameObject.GetComponent("Path_follower_script") as Path_follower_script);
                 if (pathFollower)
                 {
@@ -228,26 +249,6 @@ engine.addSystem(new AutoPlayUnityAudio())
                 {
                     //Entity
                     exportStr.AppendFormat(AddEntity, entityName);
-                }
-
-                DoorTrigger_script triggerObject = (tra.gameObject.GetComponent("DoorTrigger_script") as DoorTrigger_script);
-                if (triggerObject)
-                {
-
-                    string doorNames = "[";
-
-                    for (int i = 0; i < triggerObject.doorsToClose.Length; i++)
-                    {
-                        doorNames += "\"" + triggerObject.doorsToClose[i].name + "\"";
-                        if (i + 1 < triggerObject.doorsToClose.Length)
-                        {
-                            doorNames += ",";
-                        }
-
-                    }
-                    doorNames += "]";
-                    exportStr.AppendFormat(SetTrigger, position.x, position.y, position.z, scale.x, scale.y, scale.z, (int)triggerObject.doorBehavior, doorNames);
-                    return;
                 }
 
                 //Transform
@@ -939,7 +940,7 @@ engine.addSystem(new AutoPlayUnityAudio())
         /// </summary>
         private static string ToHexString(Color color)
         {
-            var color256 = (Color32)color;
+            var color256 = (Color32) color;
             return String.Format("#{0:X2}{1:X2}{2:X2}", color256.r, color256.g, color256.b);
         }
 
